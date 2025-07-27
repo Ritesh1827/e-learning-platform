@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://kit.fontawesome.com/8831557fe7.js" crossorigin="anonymous"></script>
+  <title>Interactive Courses Platform</title>
+  <style>
+    /* Header Styles (unchanged) */
+    .headerr {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background-color: #1b2732;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Sidebar Styles (unchanged) */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 78px; /* Below the header */
+      width: 250px;
+      height: calc(100vh - 80px);
+      background-color: #1b2732;
+      color: white;
+      padding: 20px 0;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+      transition: all 0.3s ease;
+      overflow-y: auto;
+    }
+    
+    .sidebar h3 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.5rem;
+      padding: 0 20px;
+    }
+    
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .sidebar li {
+      margin-bottom: 10px;
+    }
+    
+    .sidebar a {
+      display: block;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 12px 20px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+    
+    .sidebar a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 4px solid #0B808D;
+    }
+    
+    .sidebar a.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 4px solid #0B808D;
+      font-weight: 500;
+    }
+
+    /* Main Content Styles (unchanged) */
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-left: 250px; /* Same as sidebar width */
+      padding-top: 78px; /* Account for fixed header */
+      transition: margin-left 0.3s ease;
+    }
+
+    /* Modern CSS Styles */
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --text-color: #2c3e50;
+      --light-bg: #f8fafc;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--light-bg);
+      color: var(--text-color);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: var(--primary-color);
+      margin-bottom: 2.5rem;
+    }
+
+    /* Modern Course Grid Styles */
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .course-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      max-width: 20rem;
+      min-width: 20rem;
+    }
+
+    .course-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .course-image {
+      height: 160px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .course-image::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%);
+    }
+
+    .course-content {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .course-title {
+      font-size: 1.25rem;
+      margin: 0 0 0.75rem;
+      color: var(--primary-color);
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .course-description {
+      color: #666;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-grow: 1;
+    }
+
+    .course-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .course-rating {
+      color: #FFC107;
+      font-weight: 500;
+    }
+
+    .enrollment-count {
+      color: #666;
+      font-size: 0.8rem;
+      margin-left: 0.25rem;
+    }
+
+    .course-cost {
+      background: #f0f8ff;
+      color: var(--secondary-color);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+
+    .bothbuttons {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: auto;
+    }
+
+    .enroll-btn {
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      font-weight: 500;
+      flex: 1;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .enroll-btn:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    .enroll-btn i {
+      margin-right: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    /* New Badge */
+    .new-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--accent-color);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      z-index: 1;
+    }
+
+    /* Modern Search & Filter Styles */
+    .course-search-container {
+      display: flex;
+      justify-content: center;
+      margin: 2rem auto;
+      max-width: 700px;
+      padding: 0 2rem;
+    }
+
+    #courseSearchForm {
+      display: flex;
+      padding: 0;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-radius: 50px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      background-color: white;
+    }
+
+    #courseSearchForm:focus-within {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    #courseSearchInput {
+      border: none;
+      padding: 0 1rem 0 1rem;
+      outline: none;
+      width: 100%;
+      height: 100%;
+      font-size: 1rem;
+      background: white;
+    }
+    ::placeholder{
+      color: #838383;
+    }
+
+    #courseSearchButton {
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 0 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #courseSearchButton:hover {
+      background: #096b75;
+    }
+
+    /* Modern Filter Controls */
+    #sortFilterControls {
+      margin: 1.5rem auto 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      max-width: 800px;
+      padding: 0 2rem;
+    }
+
+    #sortFilterControls > div {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    #sortFilterControls label {
+      font-weight: 500;
+      color: var(--primary-color);
+      font-size: 0.95rem;
+    }
+
+    #sortFilterControls select {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    #sortFilterControls select:hover {
+      border-color: #bbb;
+    }
+
+    #sortFilterControls select:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    /* Modern Add Course Button */
+    #addCourseBtn {
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: block;
+      margin: 2rem auto;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+    }
+
+    #addCourseBtn:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+    }
+
+    /* Modern Course Detail Styles */
+    .course-detail {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 2rem;
+    }
+
+    .course-detail.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .course-detail > div {
+      background: white;
+      border-radius: 12px;
+      padding: 2.5rem;
+      max-width: 900px;
+      margin: 2rem auto;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: #f0f0f0;
+      color: var(--primary-color);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      background: #e0e0e0;
+    }
+
+    /* Add Course Form Styles */
+    #addCourseForm {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin: 1rem auto;
+      max-width: 800px;
+    }
+
+    #addCourseForm input,
+    #addCourseForm textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: var(--text-color);
+      transition: all 0.2s ease;
+    }
+
+    #addCourseForm input:focus,
+    #addCourseForm textarea:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    #addCourseForm textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    #addCourseForm button[type="submit"] {
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    #addCourseForm button[type="submit"]:hover {
+      background: #2980b9;
+    }
+
+    /* Test Question Styles */
+    .test-question {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+
+    .test-question input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    /* Hamburger Menu (unchanged) */
+    .hamburger {
+      display: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: white;
+      margin-right: 20px;
+    }
+
+    .nav_links {
+      display: flex;
+      align-items: center;
+    }
+
+    .nav_links button {
+      padding: 8px 14px;
+      margin-left: 24px;
+    }
+
+    h3 {
+      margin: auto 0 10px 0;
+      padding: 0;
+      color: #ffffff;
+      font-size: 2rem;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 1200px) {
+      .sidebar {
+        width: 200px;
+      }
+      main {
+        margin-left: 200px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hamburger {
+        display: block;
+      }
+      .sidebar {
+        transform: translateX(-100%);
+        width: 250px;
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      main {
+        margin-left: 0;
+      }
+      .headerr h3 {
+        font-size: 1.5rem;
+      }
+      .course-search-container{
+        width: 60%;
+      }
+      .courses-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        padding: 1rem;
+      }
+      #sortFilterControls {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+      .course-detail > div {
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .course-search-container {
+        padding: 1rem;
+      }
+      #courseSearchButton {
+        padding: .5rem;
+      }
+      .course-search-container{
+        width: 40%;
+      }
+      main {
+        padding-top: 69px; /* Account for fixed header */
+      }
+      .sidebar{
+        top: 69px;
+      }
+      .courses-grid {
+        grid-template-columns: 1fr;
+      }
+      .bothbuttons {
+        flex-direction: column;
+      }
+      .enroll-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="headerr">
+    <div class="hamburger"><i class="fa-solid fa-bars"></i></div>
+    <h3>gyaan_e</h3>
+    <nav>
+      <ul class="nav_links">
+        <button id="authLink"></button>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="sidebar">
+    <ul>
+      <li><a href="index.html">Feed</a></li>
+      <li><a href="courses.html" class="active">Courses</a></li>
+      <li><a href="community.html">Community</a></li>
+    </ul>
+  </div>
+
+  <main>
+    <h1>Explore Our Courses</h1>
+
+    <!-- Course Search Bar -->
+    <div class="course-search-container">
+      <form id="courseSearchForm">
+        <input type="text" id="courseSearchInput" placeholder="Search courses by title or tags...">
+        <button type="submit" id="courseSearchButton">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </form>
+    </div>
+
+    <!-- Sorting and Filtering Controls -->
+    <div id="sortFilterControls">
+      <!-- Sorting Dropdown -->
+      <div>
+        <label for="sortBy">Sort By:</label>
+        <select id="sortBy" onchange="loadCourses()">
+          <option value="none">None</option>
+          <option value="ratingHighToLow">Rating (High to Low)</option>
+          <option value="ratingLowToHigh">Rating (Low to High)</option>
+          <option value="popularityHighToLow">Popularity (High to Low)</option>
+          <option value="popularityLowToHigh">Popularity (Low to High)</option>
+        </select>
+      </div>
+
+      <!-- Filter Dropdown -->
+      <div>
+        <label for="filterType">Filter:</label>
+        <select id="filterType" onchange="loadCourses()">
+          <option value="all">All Courses</option>
+          <option value="free">Free Courses Only</option>
+          <option value="paid">Paid Courses Only</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Add Course Button (only for admin) -->
+    <div id="addCourseSection" style="display: none;">
+      <button id="addCourseBtn" onclick="showAddCourseForm()">Add Course</button>
+      <div id="addCourseForm" style="display: none;">
+        <form onsubmit="event.preventDefault(); addCourse();">
+          <input type="text" id="courseTitle" placeholder="Course Title" required>
+          <textarea id="courseDescription" placeholder="Course Description" required></textarea>
+          <input type="text" id="courseImage" placeholder="Image URL" required>
+          <input type="text" id="courseVideos" placeholder="YouTube Video IDs (comma-separated)" required>
+          <input type="text" id="courseTags" placeholder="Enter tags (comma-separated)" required>
+          <input type="number" id="creditsRequired" placeholder="Credits Required (0 for free)" required min="0">
+      
+          <!-- Test Section -->
+          <div id="testQuestionsContainer">
+            <h3>Add Test Questions</h3>
+            <div class="test-question">
+              <input type="text" class="question" placeholder="Question" required>
+              <input type="text" class="option1" placeholder="Option 1" required>
+              <input type="text" class="option2" placeholder="Option 2" required>
+              <input type="text" class="option3" placeholder="Option 3" required>
+              <input type="text" class="option4" placeholder="Option 4" required>
+              <input type="text" class="correctAnswer" placeholder="Correct Answer (e.g., Option 1)" required>
+            </div>
+          </div>
+          <button type="button" onclick="addQuestion()">Add Another Question</button>
+      
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
+  
+    <!-- Courses Grid -->
+    <div class="courses-grid" id="coursesContainer"></div>
+  
+    <!-- Course Detail Section -->
+    <div id="courseDetail" class="course-detail">
+      <div>
+        <button class="back-btn" onclick="hideCourseDetail()">
+          <i class="fas fa-times"></i> Close
+        </button>
+        <h2 id="detailCourseTitle"></h2>
+        <p id="detailCourseDescription"></p>
+        <div class="video-container" id="detailCourseVideos"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Helper function to check if a course is new
+    function isNewCourse(createdAt) {
+      if (!createdAt) return false;
+      const courseDate = new Date(createdAt);
+      const now = new Date();
+      const diffDays = Math.floor((now - courseDate) / (1000 * 60 * 60 * 24));
+      return diffDays <= 7; // Show "New" badge for courses created in the last 7 days
+    }
+
+    // Enroll in a course
+    async function enrollCourse(courseId) {
+      const response = await fetch('/check-login', { credentials: 'include' });
+      const data = await response.json();
+
+      if (!data.loggedIn) {
+        window.location.href = 'login.html'; // Redirect to login page
+        return;
+      }
+
+      const enrollResponse = await fetch('/enroll-course', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId }),
+        credentials: 'include'
+      });
+
+      const enrollData = await enrollResponse.json();
+      if (enrollData.success) {
+        alert('Course has been added to your profile!');
+      } else {
+        alert('Error enrolling in the course.');
+      }
+    }
+
+    // Fetch and display courses
+    async function loadCourses() {
+      const response = await fetch('/courses');
+      const data = await response.json();
+
+      if (data.success) {
+        let courses = data.courses;
+
+        // Apply Filters
+        const filterType = document.getElementById('filterType').value;
+
+        if (filterType === 'free') {
+          courses = courses.filter(course => course.creditsRequired === 0);
+        } else if (filterType === 'paid') {
+          courses = courses.filter(course => course.creditsRequired > 0);
+        }
+
+        // Apply Search Filter
+        const searchQuery = document.getElementById('courseSearchInput').value.toLowerCase();
+        if (searchQuery) {
+          courses = courses.filter(course => 
+            course.title.toLowerCase().includes(searchQuery) || 
+            (course.tags && course.tags.some(tag => tag.toLowerCase().includes(searchQuery)))
+          );
+        }
+
+        // Apply Sorting
+        const sortBy = document.getElementById('sortBy').value;
+
+        switch (sortBy) {
+          case 'ratingHighToLow':
+            courses.sort((a, b) => {
+              const ratingA = a.ratings.length > 0 ? a.ratings.reduce((sum, r) => sum + r.rating, 0) / a.ratings.length : 0;
+              const ratingB = b.ratings.length > 0 ? b.ratings.reduce((sum, r) => sum + r.rating, 0) / b.ratings.length : 0;
+              return ratingB - ratingA;
+            });
+            break;
+
+          case 'ratingLowToHigh':
+            courses.sort((a, b) => {
+              const ratingA = a.ratings.length > 0 ? a.ratings.reduce((sum, r) => sum + r.rating, 0) / a.ratings.length : 0;
+              const ratingB = b.ratings.length > 0 ? b.ratings.reduce((sum, r) => sum + r.rating, 0) / b.ratings.length : 0;
+              return ratingA - ratingB;
+            });
+            break;
+
+          case 'popularityHighToLow':
+            courses.sort((a, b) => {
+              const popularityA = a.enrollmentCount * (a.ratings.length > 0 ? a.ratings.reduce((sum, r) => sum + r.rating, 0) / a.ratings.length : 1);
+              const popularityB = b.enrollmentCount * (b.ratings.length > 0 ? b.ratings.reduce((sum, r) => sum + r.rating, 0) / b.ratings.length : 1);
+              return popularityB - popularityA;
+            });
+            break;
+
+          case 'popularityLowToHigh':
+            courses.sort((a, b) => {
+              const popularityA = a.enrollmentCount * (a.ratings.length > 0 ? a.ratings.reduce((sum, r) => sum + r.rating, 0) / a.ratings.length : 1);
+              const popularityB = b.enrollmentCount * (b.ratings.length > 0 ? b.ratings.reduce((sum, r) => sum + r.rating, 0) / b.ratings.length : 1);
+              return popularityA - popularityB;
+            });
+            break;
+
+          default:
+            // No sorting
+            break;
+        }
+
+        // Display Courses
+        const container = document.getElementById('coursesContainer');
+        container.innerHTML = ''; // Clear existing courses
+
+        courses.forEach((course) => {
+          const card = document.createElement('div');
+          card.className = 'course-card';
+          card.innerHTML = `
+            <div class="course-image" style="background-image: url('${course.image}')">
+              ${isNewCourse(course.createdAt) ? '<span class="new-badge">New</span>' : ''}
+            </div>
+            <div class="course-content">
+              <h3 class="course-title">${course.title}</h3>
+              <p class="course-description">${course.description}</p>
+              <div class="course-meta">
+                <div class="course-rating">
+                  ${getRatingStars(course.ratings)}
+                  <span class="enrollment-count">(${course.enrollmentCount || 0})</span>
+                </div>
+                <div class="course-cost">
+                  ${course.creditsRequired === 0 ? 'Free' : `${course.creditsRequired} Credits`}
+                </div>
+              </div>
+              <div class="bothbuttons">
+                <button class="enroll-btn" onclick="showCourseDetail('${course._id}')">
+                  <i class="fas fa-info-circle"></i> Details
+                </button>
+                <button class="enroll-btn" onclick="enrollCourse('${course._id}')">
+                  <i class="fas fa-bookmark"></i> Enroll
+                </button>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      }
+    }
+
+    // Helper function to calculate and display rating stars
+    function getRatingStars(ratings) {
+      if (ratings.length === 0) return 'No ratings yet';
+      const averageRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+      const fullStars = Math.round(averageRating);
+      return '&#9733;'.repeat(fullStars) + '&#9734;'.repeat(5 - fullStars);
+    }
+
+    // Show course details
+    async function showCourseDetail(courseId) {
+      const response = await fetch(`/courses/${courseId}`);
+      const data = await response.json();
+
+      if (data.success) {
+        const course = data.course;
+        const courseDetail = document.getElementById('courseDetail');
+        const detailCourseTitle = document.getElementById('detailCourseTitle');
+        const detailCourseDescription = document.getElementById('detailCourseDescription');
+        const detailCourseVideos = document.getElementById('detailCourseVideos');
+
+        detailCourseTitle.textContent = course.title;
+        detailCourseDescription.textContent = course.description;
+        detailCourseVideos.innerHTML = '';
+
+        // Display only the first two videos
+        course.videos.slice(0, 2).forEach((videoId) => {
+          const iframe = document.createElement('iframe');
+          iframe.src = `https://www.youtube.com/embed/${videoId}`;
+          iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+          iframe.allowFullscreen = true;
+          detailCourseVideos.appendChild(iframe);
+        });
+
+        // Add "and more..." text if there are more than two videos
+        if (course.videos.length > 2) {
+          const moreText = document.createElement('p');
+          moreText.textContent = `+ ${course.videos.length - 2} more videos...`;
+          moreText.style.textAlign = 'center';
+          moreText.style.marginTop = '1rem';
+          detailCourseVideos.appendChild(moreText);
+        }
+
+        // Add "Enroll Now" button
+        const enrollButton = document.createElement('button');
+        enrollButton.textContent = 'Enroll Now';
+        enrollButton.className = 'enroll-btn';
+        enrollButton.style.margin = '1.5rem auto 0';
+        enrollButton.style.padding = '0.8rem 2rem';
+        enrollButton.onclick = () => enrollCourse(courseId);
+        detailCourseVideos.appendChild(enrollButton);
+
+        courseDetail.classList.add('active');
+      }
+    }
+
+    // Hide course details
+    function hideCourseDetail() {
+      document.getElementById('courseDetail').classList.remove('active');
+    }
+
+    // Show the "Add Course" form
+    function showAddCourseForm() {
+      const form = document.getElementById('addCourseForm');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Add a new course
+    async function addCourse() {
+      const title = document.getElementById('courseTitle').value;
+      const description = document.getElementById('courseDescription').value;
+      const image = document.getElementById('courseImage').value;
+      const videos = document.getElementById('courseVideos').value.split(',').map(v => v.trim());
+      const tags = document.getElementById('courseTags').value.split(',').map(tag => tag.trim());
+      const creditsRequired = parseInt(document.getElementById('creditsRequired').value);
+
+      // Collect test questions
+      const testQuestions = [];
+      const questionElements = document.querySelectorAll('.test-question');
+      questionElements.forEach((questionElement) => {
+        const question = questionElement.querySelector('.question').value;
+        const option1 = questionElement.querySelector('.option1').value;
+        const option2 = questionElement.querySelector('.option2').value;
+        const option3 = questionElement.querySelector('.option3').value;
+        const option4 = questionElement.querySelector('.option4').value;
+        const correctAnswer = questionElement.querySelector('.correctAnswer').value;
+
+        testQuestions.push({
+          question,
+          options: [option1, option2, option3, option4],
+          correctAnswer
+        });
+      });
+
+      const response = await fetch('/add-course', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description, image, videos, tags, creditsRequired, test: testQuestions })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert('Course added successfully!');
+        document.getElementById('addCourseForm').style.display = 'none';
+        loadCourses(); // Refresh the course list
+      } else {
+        alert('Error adding course.');
+      }
+    }
+
+    // Check if the user is admin and show the "Add Course" button
+    async function checkAdmin() {
+      const response = await fetch('/check-login', { credentials: 'include' });
+      const data = await response.json();
+
+      if (data.loggedIn && data.username === 'admin') {
+        document.getElementById('addCourseSection').style.display = 'block';
+      }
+    }
+
+    // Function to add a new question field
+    function addQuestion() {
+      const testQuestionsContainer = document.getElementById('testQuestionsContainer');
+      const newQuestion = document.createElement('div');
+      newQuestion.className = 'test-question';
+      newQuestion.innerHTML = `
+        <input type="text" class="question" placeholder="Question" required>
+        <input type="text" class="option1" placeholder="Option 1" required>
+        <input type="text" class="option2" placeholder="Option 2" required>
+        <input type="text" class="option3" placeholder="Option 3" required>
+        <input type="text" class="option4" placeholder="Option 4" required>
+        <input type="text" class="correctAnswer" placeholder="Correct Answer (e.g., Option 1)" required>
+      `;
+      testQuestionsContainer.appendChild(newQuestion);
+    }
+
+    // Check login status
+    async function updateNavBar() {
+      const response = await fetch('/check-login', { credentials: 'include' });
+      const data = await response.json();
+
+      const authLink = document.getElementById('authLink');
+      if (data.loggedIn) {
+        authLink.innerHTML = `<a href="profile.html">Profile</a>`;
+      } else {
+        authLink.innerHTML = `<a href="login.html">Login</a>`;
+      }
+    }
+
+    // Sidebar toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const hamburger = document.querySelector('.hamburger');
+      const sidebar = document.querySelector('.sidebar');
+      
+      hamburger.addEventListener('click', function() {
+        sidebar.classList.toggle('active');
+      });
+
+      function checkScreenSize() {
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('active');
+        } else {
+          sidebar.classList.add('active');
+        }
+      }
+      
+      checkScreenSize();
+      window.addEventListener('resize', checkScreenSize);
+    });
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCourses();
+      checkAdmin();
+      updateNavBar();
+      
+      // Add event listener for course search
+      document.getElementById('courseSearchForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        loadCourses();
+      });
+    });
+  </script>
+</body>
+</html>

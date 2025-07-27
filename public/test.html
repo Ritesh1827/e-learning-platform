@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Test</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #2c3e50;
+    }
+
+    #testContainer {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      width: 90%;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+    }
+
+    #testQuestions {
+      margin-bottom: 2rem;
+    }
+
+    .question {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: #f5f5f5;
+      border-radius: 10px;
+    }
+
+    .question p {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .question label {
+      display: block;
+      margin: 0.5rem 0;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 5px;
+      transition: background-color 0.2s;
+    }
+
+    .question label:hover {
+      background-color: #e0e0e0;
+    }
+
+    .question input[type="radio"] {
+      margin-right: 0.5rem;
+      transform: scale(1.1);
+    }
+
+    button[type="submit"],
+    #generateCertificate {
+      display: block;
+      margin: 0 auto;
+      padding: 0.75rem 1.5rem;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      max-width: 250px;
+    }
+
+    button[type="submit"]:hover,
+    #generateCertificate:hover {
+      background-color: #2980b9;
+    }
+
+    #certificateSection {
+      display: none;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    #certificateSection h2 {
+      color: #27ae60;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    #nameForm {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    #nameForm input {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 100%;
+      max-width: 300px;
+      box-sizing: border-box;
+    }
+
+    #nameForm button {
+      padding: 0.75rem;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    ::placeholder {
+      color: #000000;
+      opacity: 0.7;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      #testContainer {
+        padding: 1rem;
+        margin: 1rem auto;
+        width: 95%;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .question {
+        padding: 0.75rem;
+      }
+
+      .question p {
+        font-size: 1rem;
+      }
+
+      button[type="submit"],
+      #generateCertificate {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+      }
+
+      #certificateSection h2 {
+        font-size: 1.3rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      #testContainer {
+        padding: 0.75rem;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+      }
+
+      #nameForm input {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div id="testContainer">
+    <h1>Course Test</h1>
+    <form id="testForm">
+      <div id="testQuestions"></div>
+      <button type="submit">Submit Test</button>
+    </form>
+    <div id="certificateSection">
+      <h2>Congratulations! You passed the test.</h2>
+      <div id="nameForm">
+        <input type="text" id="userName" placeholder="Enter your full name" required>
+        <button type="button" id="generateCertificate">Generate Certificate</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Fetch courseId from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get('courseId');
+
+    // Fetch course name from the backend
+    let courseName = "Advanced JavaScript Course"; // Default course name
+    async function fetchCourseName() {
+      try {
+        const response = await fetch(`/courses/${courseId}`);
+        const data = await response.json();
+        if (data.success) {
+          courseName = data.course.title; // Update course name
+        }
+      } catch (error) {
+        console.error('Error fetching course name:', error);
+      }
+    }
+
+    // Fetch test questions from the backend
+    async function loadTestQuestions() {
+      try {
+        const response = await fetch(`/course-test/${courseId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch test questions.');
+        }
+        const data = await response.json();
+
+        if (data.success) {
+          const testQuestions = document.getElementById('testQuestions');
+          testQuestions.innerHTML = ''; // Clear existing questions
+
+          data.test.forEach((question, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question';
+            questionDiv.innerHTML = `
+              <p><strong>Question ${index + 1}:</strong> ${question.question}</p>
+              ${question.options.map((option, i) => `
+                <label>
+                  <input type="radio" name="question${index}" value="${i + 1}">
+                  ${option}
+                </label>
+              `).join('')}
+            `;
+            testQuestions.appendChild(questionDiv);
+          });
+        } else {
+          alert('Error loading test questions: ' + data.message);
+        }
+      } catch (error) {
+        console.error('Error loading test questions:', error);
+        alert('Error loading test questions. Please try again.');
+      }
+    }
+
+    // Handle test submission
+    document.getElementById('testForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const answers = [];
+      const testQuestions = document.querySelectorAll('#testQuestions .question');
+      let allAnswered = true;
+
+      testQuestions.forEach((question, index) => {
+        const selectedOption = question.querySelector(`input[name="question${index}"]:checked`);
+        if (selectedOption) {
+          answers.push(selectedOption.value);
+        } else {
+          allAnswered = false;
+        }
+      });
+
+      if (!allAnswered) {
+        alert('Please answer all questions before submitting.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/submit-test/${courseId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 'currentUser', answers }) // Replace 'currentUser' with actual username
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to submit test.');
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          if (data.passed) {
+            // Show certificate section
+            document.getElementById('certificateSection').style.display = 'block';
+            document.getElementById('testForm').style.display = 'none';
+          } else {
+            alert(`You scored ${data.percentage}%. You need at least 75% to pass.`);
+          }
+        } else {
+          alert('Error submitting test: ' + data.message);
+        }
+      } catch (error) {
+        console.error('Error submitting test:', error);
+        alert('Error submitting test. Please try again.');
+      }
+    });
+
+    // Handle certificate generation
+    document.getElementById('generateCertificate').addEventListener('click', function() {
+      const userName = document.getElementById('userName').value;
+      if (!userName) {
+        alert('Please enter your name.');
+        return;
+      }
+
+      generateCertificate(userName);
+    });
+
+    // Function to generate and download certificate in PDF format
+    function generateCertificate(userName) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('landscape');
+
+      // Certificate content
+      const dateOfIssue = new Date();
+      const formattedDate = `${String(dateOfIssue.getDate()).padStart(2, '0')}/${String(dateOfIssue.getMonth() + 1).padStart(2, '0')}/${dateOfIssue.getFullYear()}`;
+
+      // Add certificate border
+      doc.setLineWidth(0.1);
+      doc.rect(10, 10, 280, 190);
+
+      // Add custom fonts
+      doc.addFont('Times New Roman', 'Times', 'normal');
+      const dancingScriptFont = 'fonts/DancingScript-VariableFont_wght.ttf'; // Path to the font file
+      doc.addFont(dancingScriptFont, 'DancingScript', 'normal');
+      const pinyonScriptFont = 'fonts/PinyonScript-Regular.ttf'; // Path to the font file
+      doc.addFont(pinyonScriptFont, 'PinyonScript', 'normal');
+      // Add title
+      doc.setFontSize(40); // Larger font size
+      doc.setFont('Times', 'bold'); // Times New Roman, bold
+      doc.setTextColor(40, 60, 80); // Dark blue color
+      doc.text("CERTIFICATE OF COMPLETION", 150, 40, { align: 'center' });
+
+      // Add course name
+      doc.setFontSize(20);
+      doc.setFont('Times', 'normal'); // Times New Roman, not bold
+      doc.setTextColor(60, 80, 100); // Slightly lighter blue
+      doc.text(`THIS CERTIFICATE IS PRESENTED TO`, 150, 60, { align: 'center' });
+
+      // Add user name
+      doc.setLineWidth(0.5);
+      doc.line(100, 95, 200, 95); // Signature line below the image
+      doc.setFontSize(48); // Larger font size for the name
+      doc.setFont('PinyonScript', 'normal'); // Cursive font
+      doc.setTextColor(30, 50, 70); // Darker blue
+      doc.text(userName, 150, 90, { align: 'center' });
+
+      // Add completion text
+      doc.setFontSize(18);
+      doc.setFont('Times', 'normal'); // Times New Roman, not bold
+      doc.setTextColor(60, 80, 100); // Slightly lighter blue
+      doc.text(`FOR COMPLETING ${courseName.toUpperCase()} COURSE IN EXCELLENCE`, 150, 120, { align: 'center' });
+
+      // Add date of issue
+      doc.setFontSize(16);
+      doc.setFont('Times', 'normal'); // Times New Roman, not bold
+      doc.setTextColor(80, 100, 120); // Light blue
+      doc.text(`DATE : ${formattedDate}`, 150, 140, { align: 'center' });
+
+      // Add signature image (JPG)
+      const signatureImg = new Image();
+      signatureImg.src = 'images/signature.jpg'; // Replace with the path to your signature JPG
+      signatureImg.onload = function() {
+        doc.addImage(signatureImg, 'JPG', 130, 150, 40, 20); // Positioned above the signature line
+
+        // Add signature line
+        doc.setLineWidth(0.5);
+        doc.line(100, 175, 200, 175); // Signature line below the image
+        doc.setFontSize(14);
+        doc.setFont('Times', 'normal'); // Times New Roman, not bold
+        doc.setTextColor(60, 80, 100); // Slightly lighter blue
+        doc.text("Signature", 150, 185, { align: 'center' });
+
+        // Save the PDF
+        doc.save(`Certificate_${userName}.pdf`);
+      };
+    }
+
+    // Load test questions and course name when the page loads
+    window.onload = async function() {
+      await fetchCourseName();
+      loadTestQuestions();
+    };
+  </script>
+</body>
+</html>
